@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GenericAppTest
 {
-  private static final Logger LOG = LoggerFactory.getLogger(HDSApplicationTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GenericAppTest.class);
   private final KafkaOperatorTestBase kafkaLauncher = new KafkaOperatorTestBase();
 
   private static final String kafkaQueryTopic = "HDSApplicationQuery";
@@ -105,7 +105,7 @@ public class GenericAppTest
     new Thread(queryResultsListener).start();
 
     // Wait to receive messages
-    latch.await(15, TimeUnit.SECONDS);
+    latch.await(20, TimeUnit.SECONDS);
     lc.shutdown();
 
     // Evaluate results

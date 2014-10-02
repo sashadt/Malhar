@@ -20,19 +20,31 @@ public class ArrayDimensionComputation extends DimensionsComputation<Object, Arr
   private String eventSchemaJSON = EventSchema.DEFAULT_SCHEMA_ADS;
   private transient EventSchema eventSchema;
 
+  // Initialize aggregators when this class is instantiated
+  {
+    initAggregators();
+  }
+
   public String getEventSchemaJSON()
   {
     return eventSchemaJSON;
   }
 
-  public void setEventSchemaJSON(String eventSchemaJSON)
-  {
-    this.eventSchemaJSON = eventSchemaJSON;
-    /*
+  private void initAggregators(){
     DimensionsGenerator gen = new DimensionsGenerator(getEventSchema());
     Aggregator[] aggregators = gen.generateArrayAggregators();
     setAggregators(aggregators);
-    */
+  }
+
+  public void setEventSchemaJSON(String eventSchemaJSON)
+  {
+    this.eventSchemaJSON = eventSchemaJSON;
+    try {
+      eventSchema = EventSchema.createFromJSON(eventSchemaJSON);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Failed to parse JSON input: " + eventSchemaJSON, e);
+    }
+    initAggregators();
   }
 
   public EventSchema getEventSchema() {
@@ -50,14 +62,12 @@ public class ArrayDimensionComputation extends DimensionsComputation<Object, Arr
   @Override public void setup(Context.OperatorContext context)
   {
     super.setup(context);
-    DimensionsGenerator gen = new DimensionsGenerator(getEventSchema());
-    Aggregator[] aggregators = gen.generateArrayAggregators();
-    setAggregators(aggregators);
+    initAggregators();
   }
 
   @Override public void processTuple(Object tuple)
   {
-    ArrayEvent ae = eventSchema.convertMapToArrayEvent((Map<String, Object>)tuple);
+    ArrayEvent ae = getEventSchema().convertMapToArrayEvent((Map<String, Object>) tuple);
     super.processTuple(ae);
   }
 }
