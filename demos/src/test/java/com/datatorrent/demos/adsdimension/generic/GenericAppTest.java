@@ -105,7 +105,7 @@ public class GenericAppTest
     new Thread(queryResultsListener).start();
 
     // Wait to receive messages
-    latch.await(20, TimeUnit.SECONDS);
+    latch.await(15, TimeUnit.SECONDS);
     lc.shutdown();
 
     // Evaluate results

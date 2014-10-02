@@ -68,9 +68,8 @@ public class EventSchema implements Serializable
 
   public String timestamp = "timestamp";
 
-  transient public List<String> keyList = Lists.newArrayList();
-  transient public List<String> allFields = Lists.newArrayList();
-  transient public List<String> metrices = Lists.newArrayList();
+  transient public List<String> keysWithoutTimestamp = Lists.newArrayList();
+  transient public List<String> aggregateKeys = Lists.newArrayList();
 
   transient private int keyLen;
   transient private int valLen;
@@ -108,25 +107,11 @@ public class EventSchema implements Serializable
         uniqueKeys.add(key);
       }
     }
-    uniqueKeys.add(eventSchema.getTimestamp());
-    List<String> keys = Lists.newArrayList();
-    keys.addAll(uniqueKeys);
-    eventSchema.setKeys(keys);
+    eventSchema.keysWithoutTimestamp.addAll(uniqueKeys);
+    eventSchema.keys.addAll(uniqueKeys);
+    eventSchema.keys.add(eventSchema.getTimestamp());
 
-
-    for(String a : eventSchema.keys)
-    {
-      if (a.equals(eventSchema.getTimestamp()))
-        continue;
-      eventSchema.allFields.add(a);
-      eventSchema.keyList.add(a);
-    }
-
-    for(String a : eventSchema.aggregates.keySet())
-    {
-      eventSchema.allFields.add(a);
-      eventSchema.metrices.add(a);
-    }
+    eventSchema.aggregateKeys.addAll(eventSchema.aggregates.keySet());
 
     return eventSchema;
   }
@@ -202,9 +187,9 @@ public class EventSchema implements Serializable
   ArrayEvent convertMapToArrayEvent(Map<String, Object> tuple)
   {
     ArrayEvent ae = new ArrayEvent();
-    Object[] keys = new Object[keyList.size()];
+    Object[] keys = new Object[keysWithoutTimestamp.size()];
     int idx = 0;
-    for(String key : keyList)
+    for(String key : keysWithoutTimestamp)
     {
       if (tuple.containsKey(key))
         keys[idx++] = tuple.get(key);
@@ -212,17 +197,17 @@ public class EventSchema implements Serializable
         keys[idx++] = null;
     }
     ae.keys = keys;
-    Object[] flds = new Object[metrices.size()];
+    Object[] values = new Object[aggregateKeys.size()];
     idx = 0;
-    for(String metric : metrices)
+    for(String metric : aggregateKeys)
     {
       if (tuple.containsKey(metric))
-        flds[idx++] = tuple.get(metric);
+        values[idx++] = tuple.get(metric);
       else
-        flds[idx++] = null;
+        values[idx++] = null;
     }
-    ae.fields = flds;
-    ae.timestamp = ((Long)(tuple.get(getTimestamp()))).longValue();
+    ae.values = values;
+    ae.timestamp = ((Number)tuple.get(getTimestamp())).longValue();
     return ae;
   }
 
@@ -233,6 +218,6 @@ public class EventSchema implements Serializable
 
   public Class getAggregateType(int i)
   {
-    return getType(metrices.get(i));
+    return getType(aggregateKeys.get(i));
   }
 }

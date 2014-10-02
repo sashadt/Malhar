@@ -150,7 +150,7 @@ public class GenericAggregatorTest
 
     Object[] fields = new Object[1];
     fields[0] = 10L;
-    event.fields = fields;
+    event.values = fields;
 
     ArrayAggregate aggr = aggregator.getGroup(event, 0);
     aggregator.aggregate(aggr, event);
@@ -165,12 +165,12 @@ public class GenericAggregatorTest
 
     fields = new Object[1];
     fields[0] = 20L;
-    event2.fields = fields;
+    event2.values = fields;
 
 
     aggregator.aggregate(aggr, event2);
 
-    Assert.assertEquals("sum is 30", aggr.fields[0], 30L);
+    Assert.assertEquals("sum is 30", aggr.aggregates[0], 30L);
   }
 
   @Test
@@ -188,7 +188,7 @@ public class GenericAggregatorTest
 
     Object[] fields = new Object[1];
     fields[0] = 10L;
-    event.fields = fields;
+    event.values = fields;
 
     ArrayAggregate aggr = aggregator.getGroup(event, 0);
     aggregator.aggregate(aggr, event);
@@ -203,12 +203,12 @@ public class GenericAggregatorTest
 
     fields = new Object[1];
     fields[0] = 20L;
-    event2.fields = fields;
+    event2.values = fields;
 
 
     aggregator.aggregate(aggr, event2);
 
-    Assert.assertEquals("sum is 30", aggr.fields[0], 30L);
+    Assert.assertEquals("sum is 30", aggr.aggregates[0], 30L);
   }
 
   @Test
@@ -239,7 +239,7 @@ public class GenericAggregatorTest
 
     aggregator.aggregate(aggr, ae2);
 
-    Assert.assertEquals("sum is 30", aggr.fields[0], 30L);
+    Assert.assertEquals("sum is 30", aggr.aggregates[0], 30L);
   }
 
   @Test
@@ -275,7 +275,7 @@ public class GenericAggregatorTest
 
     aggregator.aggregate(aggr, ae2);
 
-    Assert.assertEquals("sum is 30", aggr.fields[0], 30L);
+    Assert.assertEquals("sum is 30", aggr.aggregates[0], 30L);
   }
 
 

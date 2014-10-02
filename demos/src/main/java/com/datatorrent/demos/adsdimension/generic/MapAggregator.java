@@ -125,7 +125,7 @@ class MapAggregate implements DimensionsComputation.AggregateEvent
   {
     return "MapAggregate{" +
         "keys=" + eventSchema.keys.toString() +
-        ", fields=" + fields +
+        ", values=" + fields +
         ", aggregatorIndex=" + aggregatorIndex +
         '}';
   }

@@ -16,7 +16,6 @@
 package com.datatorrent.demos.adsdimension.generic;
 
 import com.datatorrent.lib.statistics.DimensionsComputation;
-import com.datatorrent.lib.util.ObjectMapperString;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +27,7 @@ class ArrayAggregate implements DimensionsComputation.AggregateEvent
   }
 
   public Object[] keys;
-  public Object[] fields;
+  public Object[] aggregates;
   private int aggregatorIndex = 0;
   private EventSchema eventSchema;
   long timestamp;
@@ -99,8 +98,9 @@ class ArrayAggregate implements DimensionsComputation.AggregateEvent
   public String toString()
   {
     return "MapAggregate{" +
-        "keys=" + eventSchema.keys.toString() +
-        ", fields=" + fields +
+        "timestamp = " + timestamp +
+        ", keys=" + eventSchema.keys.toString() +
+        ", values=" + aggregates +
         ", aggregatorIndex=" + aggregatorIndex +
         '}';
   }
@@ -108,7 +108,7 @@ class ArrayAggregate implements DimensionsComputation.AggregateEvent
 
 class ArrayEvent {
   Object[] keys;
-  Object[] fields;
+  Object[] values;
   long timestamp;
 }
 
@@ -119,7 +119,7 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   private String dimension;
   private TimeUnit time;
   private final List<String> keys = Lists.newArrayList();
-  private final List<Integer> keyIndexs = Lists.newArrayList();
+  private final List<Integer> keyIndexes = Lists.newArrayList();
   public ArrayAggregator() {}
 
   public ArrayAggregator(EventSchema eventSchema)
@@ -141,9 +141,9 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
     }
     this.dimension = dimension;
 
-    for(int i = 0; i < eventSchema.keyList.size(); i++)
-      if (keys.contains(eventSchema.keyList.get(i)))
-        keyIndexs.add(i);
+    for(int i = 0; i < eventSchema.keysWithoutTimestamp.size(); i++)
+      if (keys.contains(eventSchema.keysWithoutTimestamp.get(i)))
+        keyIndexes.add(i);
   }
 
   @Override
@@ -151,12 +151,12 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   {
     ArrayAggregate aggr = new ArrayAggregate();
     aggr.keys = new Object[src.keys.length];
-    for(int i : keyIndexs)
+    for(int i : keyIndexes)
     {
       aggr.keys[i] = src.keys[i];
     }
 
-    aggr.fields = new Object[src.fields.length];
+    aggr.aggregates = new Object[src.values.length];
 
     // put converted timestamp as per unit specified in aggregation.
     aggr.timestamp = TimeUnit.MILLISECONDS.convert(time.convert(src.timestamp, TimeUnit.MILLISECONDS), time);
@@ -168,7 +168,7 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   public int computeHashCode(ArrayEvent object)
   {
     int hashCode = 31;
-    for(int i : keyIndexs)
+    for(int i : keyIndexes)
     {
       hashCode = hashCode * 31 + object.keys[i].hashCode();
     }
@@ -191,7 +191,7 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
     if (t1 != t2)
       return false;
 
-    for(int i : keyIndexs)
+    for(int i : keyIndexes)
     {
         Object i1 = o1.keys[i];
         Object i2 = o2.keys[i];
@@ -214,9 +214,9 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   @Override
   public void aggregate(ArrayAggregate dest, ArrayEvent src)
   {
-    for(int i = 0; i < eventSchema.metrices.size(); i++) {
+    for(int i = 0; i < eventSchema.aggregateKeys.size(); i++) {
       Class type = eventSchema.getAggregateType(i);
-      dest.fields[i] = apply(eventSchema.metrices.get(i), dest.fields[i], src.fields[i]);
+      dest.aggregates[i] = apply(eventSchema.aggregateKeys.get(i), dest.aggregates[i], src.values[i]);
     }
   }
 
@@ -224,9 +224,9 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   @Override
   public void aggregate(ArrayAggregate dest, ArrayAggregate src)
   {
-    for(int i = 0; i < eventSchema.metrices.size(); i++) {
+    for(int i = 0; i < eventSchema.aggregateKeys.size(); i++) {
       Class type = eventSchema.getAggregateType(i);
-      dest.fields[i] = apply(eventSchema.metrices.get(i), dest.fields[i], src.fields[i]);
+      dest.aggregates[i] = apply(eventSchema.aggregateKeys.get(i), dest.aggregates[i], src.aggregates[i]);
     }
   }
 
