@@ -29,7 +29,8 @@ public class GenericAggregatorTest
 {
   @Test
   public void test() {
-    MapAggregator aggregator = new MapAggregator(GenericEventSerializerTest.getEventSchema());
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=DAYS:pubId:adUnit:adId");
     /* prepare a object */
     Map<String, Object> event = Maps.newHashMap();
@@ -39,8 +40,9 @@ public class GenericAggregatorTest
     event.put("adId", 3);
     event.put("clicks", new Long(10));
 
-    MapAggregate aggr = aggregator.getGroup(event, 0);
-    aggregator.aggregate(aggr, event);
+    GenericEvent ge = eventSchema.convertMapToGenericEvent(event);
+    GenericAggregate aggr = new GenericAggregate(ge);
+    aggregator.aggregate(aggr, ge);
 
     /* prepare a object */
     Map<String, Object> event2 = Maps.newHashMap();
@@ -50,14 +52,16 @@ public class GenericAggregatorTest
     event2.put("adId", 3);
     event2.put("clicks", new Long(20));
 
-    aggregator.aggregate(aggr, event2);
+    GenericEvent ge2 = eventSchema.convertMapToGenericEvent(event2);
+    aggregator.aggregate(aggr, ge2);
 
-    Assert.assertEquals("sum is 30", aggr.fields.get("clicks"), 30L);
+    Assert.assertEquals("sum is 30", eventSchema.getKey(aggr, "clicks"), 30L);
   }
 
   @Test
   public void test1() {
-    MapAggregator aggregator = new MapAggregator(GenericEventSerializerTest.getEventSchema());
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=DAYS:pubId:adUnit");
 
     /* prepare a object */
@@ -68,8 +72,9 @@ public class GenericAggregatorTest
     event.put("adId", 3);
     event.put("clicks", new Long(10));
 
-    MapAggregate aggr = aggregator.getGroup(event, 0);
-    aggregator.aggregate(aggr, event);
+    GenericEvent ge = eventSchema.convertMapToGenericEvent(event);
+    GenericAggregate aggr = new GenericAggregate(ge);
+    aggregator.aggregate(aggr, ge);
 
     /* prepare a object */
     Map<String, Object> event2 = Maps.newHashMap();
@@ -79,15 +84,17 @@ public class GenericAggregatorTest
     event.put("adId", 5);
     event2.put("clicks", new Long(20));
 
-    aggregator.aggregate(aggr, event2);
+    GenericEvent ge2 = eventSchema.convertMapToGenericEvent(event2);
+    aggregator.aggregate(aggr, ge2);
 
-    Assert.assertEquals("sum is 30", aggr.fields.get("clicks"), 30L);
+    Assert.assertEquals("sum is 30", eventSchema.getKey(aggr, "clicks"), 30L);
   }
 
 
   @Test
   public void test2() {
-    MapAggregator aggregator = new MapAggregator(GenericEventSerializerTest.getEventSchema());
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=MINUTES:pubId:adUnit");
 
     /* prepare a object */
@@ -98,8 +105,9 @@ public class GenericAggregatorTest
     event.put("adId", 3);
     event.put("clicks", new Long(10));
 
-    MapAggregate aggr = aggregator.getGroup(event, 0);
-    aggregator.aggregate(aggr, event);
+    GenericEvent ge = eventSchema.convertMapToGenericEvent(event);
+    GenericAggregate aggr = new GenericAggregate(ge);
+    aggregator.aggregate(aggr, ge);
 
     /* prepare a object */
     Map<String, Object> event2 = Maps.newHashMap();
@@ -109,9 +117,10 @@ public class GenericAggregatorTest
     event2.put("adId", 5);
     event2.put("clicks", new Long(20));
 
-    aggregator.aggregate(aggr, event2);
+    GenericEvent ge2 = eventSchema.convertMapToGenericEvent(event2);
+    aggregator.aggregate(aggr, ge2);
 
-    Assert.assertEquals("sum is 30", aggr.fields.get("clicks"), 30L);
+    Assert.assertEquals("sum is 30", eventSchema.getKey(aggr, "clicks"), 30L);
   }
 
   @Test
@@ -137,10 +146,10 @@ public class GenericAggregatorTest
 
   @Test
   public void testArrayAggregator() {
-    ArrayAggregator aggregator = new ArrayAggregator(GenericEventSerializerTest.getEventSchema());
+    GenericAggregator aggregator = new GenericAggregator(GenericAggregateSerializerTest.getEventSchema());
     aggregator.init("time=DAYS:pubId:adUnit:adId");
     /* prepare a object */
-    ArrayEvent event = new ArrayEvent();
+    GenericEvent event = new GenericEvent();
     event.timestamp = System.currentTimeMillis();
     Object[] keys = new Object[3];
     keys[0] = 1;
@@ -152,10 +161,10 @@ public class GenericAggregatorTest
     fields[0] = 10L;
     event.values = fields;
 
-    ArrayAggregate aggr = aggregator.getGroup(event, 0);
+    GenericAggregate aggr = aggregator.getGroup(event, 0);
     aggregator.aggregate(aggr, event);
 
-    ArrayEvent event2 = new ArrayEvent();
+    GenericEvent event2 = new GenericEvent();
     event.timestamp = System.currentTimeMillis();
     keys = new Object[3];
     keys[0] = 1;
@@ -175,10 +184,10 @@ public class GenericAggregatorTest
 
   @Test
   public void testArrayAggregator2() {
-    ArrayAggregator aggregator = new ArrayAggregator(GenericEventSerializerTest.getEventSchema());
+    GenericAggregator aggregator = new GenericAggregator(GenericAggregateSerializerTest.getEventSchema());
     aggregator.init("time=DAYS:pubId:adUnit");
     /* prepare a object */
-    ArrayEvent event = new ArrayEvent();
+    GenericEvent event = new GenericEvent();
     event.timestamp = System.currentTimeMillis();
     Object[] keys = new Object[3];
     keys[0] = 1;
@@ -190,10 +199,10 @@ public class GenericAggregatorTest
     fields[0] = 10L;
     event.values = fields;
 
-    ArrayAggregate aggr = aggregator.getGroup(event, 0);
+    GenericAggregate aggr = aggregator.getGroup(event, 0);
     aggregator.aggregate(aggr, event);
 
-    ArrayEvent event2 = new ArrayEvent();
+    GenericEvent event2 = new GenericEvent();
     event.timestamp = System.currentTimeMillis();
     keys = new Object[3];
     keys[0] = 1;
@@ -213,8 +222,8 @@ public class GenericAggregatorTest
 
   @Test
   public void testArrayAggregator3() {
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
-    ArrayAggregator aggregator = new ArrayAggregator(eventSchema);
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=DAYS:pubId:adUnit:adId");
     /* prepare a object */
     Map<String, Object> event = Maps.newHashMap();
@@ -223,9 +232,9 @@ public class GenericAggregatorTest
     event.put("adUnit", 2);
     event.put("adId", 3);
     event.put("clicks", new Long(10));
-    ArrayEvent ae = eventSchema.convertMapToArrayEvent(event);
+    GenericEvent ae = eventSchema.convertMapToGenericEvent(event);
 
-    ArrayAggregate aggr = aggregator.getGroup(ae, 0);
+    GenericAggregate aggr = aggregator.getGroup(ae, 0);
     aggregator.aggregate(aggr, ae);
 
     /* prepare a object */
@@ -235,7 +244,7 @@ public class GenericAggregatorTest
     event2.put("adUnit", 2);
     event2.put("adId", 3);
     event2.put("clicks", new Long(20));
-    ArrayEvent ae2 = eventSchema.convertMapToArrayEvent(event2);
+    GenericEvent ae2 = eventSchema.convertMapToGenericEvent(event2);
 
     aggregator.aggregate(aggr, ae2);
 
@@ -244,8 +253,8 @@ public class GenericAggregatorTest
 
   @Test
   public void testArrayAggregator4() {
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
-    ArrayAggregator aggregator = new ArrayAggregator(eventSchema);
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=DAYS:pubId:adUnit");
     /* prepare a object */
     Map<String, Object> event = Maps.newHashMap();
@@ -254,9 +263,9 @@ public class GenericAggregatorTest
     event.put("adUnit", 2);
     event.put("adId", 3);
     event.put("clicks", new Long(10));
-    ArrayEvent ae = eventSchema.convertMapToArrayEvent(event);
+    GenericEvent ae = eventSchema.convertMapToGenericEvent(event);
 
-    ArrayAggregate aggr = aggregator.getGroup(ae, 0);
+    GenericAggregate aggr = aggregator.getGroup(ae, 0);
     aggregator.aggregate(aggr, ae);
 
     // odering is pubId, adId, adUnit
@@ -271,7 +280,7 @@ public class GenericAggregatorTest
     event2.put("adUnit", 2);
     event2.put("adId", 3);
     event2.put("clicks", new Long(20));
-    ArrayEvent ae2 = eventSchema.convertMapToArrayEvent(event2);
+    GenericEvent ae2 = eventSchema.convertMapToGenericEvent(event2);
 
     aggregator.aggregate(aggr, ae2);
 
@@ -281,10 +290,10 @@ public class GenericAggregatorTest
 
   @Test
   public void dimensionComputationTest() {
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
 
-    ArrayDimensionComputation dimensions = new ArrayDimensionComputation();
-    dimensions.setEventSchemaJSON(GenericEventSerializerTest.TEST_SCHEMA_JSON);
+    GenericDimensionComputation dimensions = new GenericDimensionComputation();
+    dimensions.setEventSchemaJSON(GenericAggregateSerializerTest.TEST_SCHEMA_JSON);
     dimensions.setup(null);
 
     for(int i = 0; i < 10; i++) {

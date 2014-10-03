@@ -15,24 +15,13 @@
  */
 package com.datatorrent.demos.adsdimension.generic;
 
-import java.util.List;
-import java.util.Map;
-
-import com.datatorrent.lib.stream.DevNull;
 import com.datatorrent.lib.stream.DevNullCounter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-import com.sun.org.apache.xml.internal.dtm.ref.DTMNamedNodeMap;
 import org.apache.hadoop.conf.Configuration;
 
 import com.datatorrent.api.DAG;
 import com.datatorrent.api.StreamingApplication;
 import com.datatorrent.api.annotation.ApplicationAnnotation;
-import com.datatorrent.contrib.hds.tfile.TFileImpl;
-import com.datatorrent.contrib.kafka.KafkaSinglePortOutputOperator;
-import com.datatorrent.contrib.kafka.KafkaSinglePortStringInputOperator;
-import com.datatorrent.contrib.kafka.SimpleKafkaConsumer;
 
 /**
  * DimensionsDemo run with HDS
@@ -120,7 +109,7 @@ public class DimensionOperatorBenchmark implements StreamingApplication
 
     JsonAdInfoGenerator input = dag.addOperator("InputGenerator", JsonAdInfoGenerator.class);
     JsonToMapConverter converter = dag.addOperator("Converter", JsonToMapConverter.class);
-    ArrayDimensionComputation dimensions = dag.addOperator("DimensionsComputation", new ArrayDimensionComputation());
+    GenericDimensionComputation dimensions = dag.addOperator("DimensionsComputation", new GenericDimensionComputation());
     DevNullCounter counter = dag.addOperator("Conter", new DevNullCounter());
 
     // Removing setLocality(Locality.CONTAINER_LOCAL) from JSONStream and MapStream to isolate performance bottleneck

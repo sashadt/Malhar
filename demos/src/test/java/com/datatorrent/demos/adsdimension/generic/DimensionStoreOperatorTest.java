@@ -34,7 +34,7 @@ import com.datatorrent.lib.testbench.CollectorTestSink;
 import com.datatorrent.lib.util.TestUtils;
 import com.google.common.util.concurrent.MoreExecutors;
 
-public class MapDimensionStoreOperatorTest
+public class DimensionStoreOperatorTest
 {
   @Rule
   public final TestUtils.TestInfo testInfo = new TestUtils.TestInfo();
@@ -55,10 +55,10 @@ public class MapDimensionStoreOperatorTest
     TFileImpl hdsFile = new TFileImpl.DefaultTFileImpl();
     hdsOut.setFileStore(hdsFile);
     hdsFile.setBasePath(testInfo.getDir());
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
-    MapAggregator aggregator = new MapAggregator(eventSchema);
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=MINUTES:pubId:adId:adUnit");
-    hdsOut.setEventSchemaJSON(GenericEventSerializerTest.TEST_SCHEMA_JSON);
+    hdsOut.setEventSchemaJSON(GenericAggregateSerializerTest.TEST_SCHEMA_JSON);
     hdsOut.setAggregator(aggregator);
     hdsOut.setMaxCacheSize(1);
     hdsOut.setFlushIntervalCount(0);
@@ -75,7 +75,7 @@ public class MapDimensionStoreOperatorTest
     long baseMinute = TimeUnit.MILLISECONDS.convert(TimeUnit.MINUTES.convert(baseTime, TimeUnit.MILLISECONDS), TimeUnit.MINUTES);
 
     // Check aggregation for ae1 and ae2 as they have same key.
-    MapAggregate ae1 = new MapAggregate(eventSchema);
+    GenericAggregate ae1 = new GenericAggregate();
     ae1.setTimestamp(baseMinute);
     ae1.fields.put("pubId", 1);
     ae1.fields.put("adId", 2);
@@ -83,7 +83,7 @@ public class MapDimensionStoreOperatorTest
     ae1.fields.put("clicks", 10L);
     hdsOut.input.process(ae1);
 
-    MapAggregate ae2 = new MapAggregate(eventSchema);
+    GenericAggregate ae2 = new GenericAggregate();
     ae2.setTimestamp(baseMinute);
     ae2.fields.put("pubId", 1);
     ae2.fields.put("adId", 2);
@@ -91,7 +91,7 @@ public class MapDimensionStoreOperatorTest
     ae2.fields.put("clicks", 20L);
     hdsOut.input.process(ae2);
 
-    MapAggregate ae3 = new MapAggregate(eventSchema);
+    GenericAggregate ae3 = new GenericAggregate();
     ae3.setTimestamp(baseMinute + TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
     ae3.fields.put("pubId", 1);
     ae3.fields.put("adId", 2);
@@ -151,10 +151,10 @@ public class MapDimensionStoreOperatorTest
     TFileImpl hdsFile = new TFileImpl.DefaultTFileImpl();
     hdsOut.setFileStore(hdsFile);
     hdsFile.setBasePath(testInfo.getDir());
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
-    MapAggregator aggregator = new MapAggregator(eventSchema);
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=MINUTES:pubId:adId:adUnit");
-    hdsOut.setEventSchemaJSON(GenericEventSerializerTest.TEST_SCHEMA_JSON);
+    hdsOut.setEventSchemaJSON(GenericAggregateSerializerTest.TEST_SCHEMA_JSON);
     hdsOut.setAggregator(aggregator);
     hdsOut.setMaxCacheSize(1);
     hdsOut.setFlushIntervalCount(0);
@@ -171,21 +171,21 @@ public class MapDimensionStoreOperatorTest
     long baseMinute = TimeUnit.MILLISECONDS.convert(TimeUnit.MINUTES.convert(baseTime, TimeUnit.MILLISECONDS), TimeUnit.MINUTES);
 
     // Check aggregation for ae1 and ae2 as they have same key.
-    MapAggregate ae1 = new MapAggregate(eventSchema);
+    GenericAggregate ae1 = new GenericAggregate(eventSchema);
     ae1.setTimestamp(baseMinute);
     ae1.fields.put("pubId", 1);
     ae1.fields.put("adUnit", 3);
     ae1.fields.put("clicks", 10L);
     hdsOut.input.process(ae1);
 
-    MapAggregate ae2 = new MapAggregate(eventSchema);
+    GenericAggregate ae2 = new GenericAggregate(eventSchema);
     ae2.setTimestamp(baseMinute);
     ae2.fields.put("pubId", 1);
     ae2.fields.put("adUnit", 3);
     ae2.fields.put("clicks", 20L);
     hdsOut.input.process(ae2);
 
-    MapAggregate ae3 = new MapAggregate(eventSchema);
+    GenericAggregate ae3 = new GenericAggregate(eventSchema);
     ae3.setTimestamp(baseMinute + TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
     ae3.fields.put("pubId", 1);
     ae3.fields.put("adUnit", 3);
@@ -249,10 +249,10 @@ public class MapDimensionStoreOperatorTest
     TFileImpl hdsFile = new TFileImpl.DefaultTFileImpl();
     hdsOut.setFileStore(hdsFile);
     hdsFile.setBasePath(testInfo.getDir());
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
-    MapAggregator aggregator = new MapAggregator(eventSchema);
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
+    GenericAggregator aggregator = new GenericAggregator(eventSchema);
     aggregator.init("time=MINUTES:pubId:adId:adUnit");
-    hdsOut.setEventSchemaJSON(GenericEventSerializerTest.TEST_SCHEMA_JSON);
+    hdsOut.setEventSchemaJSON(GenericAggregateSerializerTest.TEST_SCHEMA_JSON);
     hdsOut.setAggregator(aggregator);
     hdsOut.setMaxCacheSize(100);
     hdsOut.setFlushIntervalCount(100);
@@ -269,21 +269,21 @@ public class MapDimensionStoreOperatorTest
     long baseMinute = TimeUnit.MILLISECONDS.convert(TimeUnit.MINUTES.convert(baseTime, TimeUnit.MILLISECONDS), TimeUnit.MINUTES);
 
     // Check aggregation for ae1 and ae2 as they have same key.
-    MapAggregate ae1 = new MapAggregate(eventSchema);
+    GenericAggregate ae1 = new GenericAggregate();
     ae1.setTimestamp(baseMinute);
     ae1.fields.put("pubId", 1);
     ae1.fields.put("adId", 2);
     ae1.fields.put("clicks", 10L);
     hdsOut.input.process(ae1);
 
-    MapAggregate ae2 = new MapAggregate(eventSchema);
+    GenericAggregate ae2 = new GenericAggregate();
     ae2.setTimestamp(baseMinute);
     ae2.fields.put("pubId", 1);
     ae2.fields.put("adId", 2);
     ae2.fields.put("clicks", 20L);
     hdsOut.input.process(ae2);
 
-    MapAggregate ae3 = new MapAggregate(eventSchema);
+    GenericAggregate ae3 = new GenericAggregate();
     ae3.setTimestamp(baseMinute + TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
     ae3.fields.put("pubId", 1);
     ae3.fields.put("adId", 2);
@@ -331,7 +331,7 @@ public class MapDimensionStoreOperatorTest
     File file = new File(testInfo.getDir());
     FileUtils.deleteDirectory(file);
 
-    EventSchema eventSchema = GenericEventSerializerTest.getEventSchema();
+    EventSchema eventSchema = GenericAggregateSerializerTest.getEventSchema();
 
     String[] dimensionSpecs = new String[] {
         "time=" + TimeUnit.MINUTES,
@@ -344,9 +344,9 @@ public class MapDimensionStoreOperatorTest
         "time=" + TimeUnit.MINUTES + ":pubId:adId:adUnit"
     };
 
-    MapAggregator[] aggregators = new MapAggregator[dimensionSpecs.length];
+    GenericAggregator[] aggregators = new GenericAggregator[dimensionSpecs.length];
     for (int i = dimensionSpecs.length; i-- > 0;) {
-      MapAggregator aggregator = new MapAggregator(eventSchema);
+      GenericAggregator aggregator = new GenericAggregator(eventSchema);
       aggregator.init(dimensionSpecs[i]);
       aggregators[i] = aggregator;
     }
@@ -362,9 +362,9 @@ public class MapDimensionStoreOperatorTest
     TFileImpl hdsFile = new TFileImpl.DefaultTFileImpl();
     hdsOut.setFileStore(hdsFile);
     hdsFile.setBasePath(testInfo.getDir());
-    //MapAggregator aggregator = new MapAggregator(eventSchema);
+    //GenericAggregator aggregator = new GenericAggregator(eventSchema);
     //aggregator.init("time=MINUTES:pubId:adId:adUnit");
-    hdsOut.setEventSchemaJSON(GenericEventSerializerTest.TEST_SCHEMA_JSON);
+    hdsOut.setEventSchemaJSON(GenericAggregateSerializerTest.TEST_SCHEMA_JSON);
     hdsOut.setAggregator(aggregators[0]);
     hdsOut.setMaxCacheSize(100);
     hdsOut.setFlushIntervalCount(100);
@@ -395,8 +395,8 @@ public class MapDimensionStoreOperatorTest
       e1.put("clicks", 10L);
 
       int aggrIdx = 0;
-      for (MapAggregator aggregator : aggregators) {
-        MapAggregate aggr = aggregator.getGroup(e1, aggrIdx);
+      for (GenericAggregator aggregator : aggregators) {
+        GenericAggregate aggr = aggregator.getGroup(e1, aggrIdx);
         aggregator.aggregate(aggr, e1);
         hdsOut.input.process(aggr);
         aggrIdx++;

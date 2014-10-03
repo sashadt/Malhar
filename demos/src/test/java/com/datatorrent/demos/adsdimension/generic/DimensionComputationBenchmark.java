@@ -73,7 +73,7 @@ public class DimensionComputationBenchmark
         "  \"timestamp\": \"timestamp\"\n" +
         "}";
 
-    ArrayDimensionComputation dimensions = new ArrayDimensionComputation();
+    GenericDimensionComputation dimensions = new GenericDimensionComputation();
     dimensions.setEventSchemaJSON(TEST_SCHEMA_JSON);
     dimensions.setup(null);
 

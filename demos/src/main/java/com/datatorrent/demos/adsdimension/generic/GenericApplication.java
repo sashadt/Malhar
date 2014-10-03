@@ -15,13 +15,6 @@
  */
 package com.datatorrent.demos.adsdimension.generic;
 
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import com.sun.org.apache.xml.internal.dtm.ref.DTMNamedNodeMap;
 import org.apache.hadoop.conf.Configuration;
 
 import com.datatorrent.api.DAG;
@@ -107,15 +100,13 @@ import com.datatorrent.contrib.kafka.SimpleKafkaConsumer;
  </pre>
  *
  */
-@ApplicationAnnotation(name="AdsDimensionsGenericDemo")
+@ApplicationAnnotation(name="GenericDimensionsDemo")
 public class GenericApplication implements StreamingApplication
 {
 
   @Override
   public void populateDAG(DAG dag, Configuration conf)
   {
-    dag.setAttribute(DAG.APPLICATION_NAME, "AdsDimensionsGeneric");
-
     JsonAdInfoGenerator input = dag.addOperator("InputGenerator", JsonAdInfoGenerator.class);
     JsonToMapConverter converter = dag.addOperator("Converter", JsonToMapConverter.class);
 

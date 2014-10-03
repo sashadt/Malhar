@@ -15,6 +15,7 @@
  */
 package com.datatorrent.demos.adsdimension.generic;
 
+import com.datatorrent.lib.statistics.DimensionsComputation;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -68,8 +69,9 @@ public class EventSchema implements Serializable
 
   public String timestamp = "timestamp";
 
-  transient public List<String> keysWithoutTimestamp = Lists.newArrayList();
-  transient public List<String> aggregateKeys = Lists.newArrayList();
+  // Used to map between event schema and generic event arrays for keys and values
+  transient public List<String> genericEventKeys = Lists.newArrayList();
+  transient public List<String> genericEventValues = Lists.newArrayList();
 
   transient private int keyLen;
   transient private int valLen;
@@ -86,7 +88,6 @@ public class EventSchema implements Serializable
           "  \"aggregates\": { \"amount\": \"sum\" },\n" +
           "  \"timestamp\": \"timestamp\"\n" +
           "}";
-  private int timestampIndex;
 
   public static EventSchema createFromJSON(String json) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
@@ -107,11 +108,11 @@ public class EventSchema implements Serializable
         uniqueKeys.add(key);
       }
     }
-    eventSchema.keysWithoutTimestamp.addAll(uniqueKeys);
+    eventSchema.genericEventKeys.addAll(uniqueKeys);
     eventSchema.keys.addAll(uniqueKeys);
     eventSchema.keys.add(eventSchema.getTimestamp());
 
-    eventSchema.aggregateKeys.addAll(eventSchema.aggregates.keySet());
+    eventSchema.genericEventValues.addAll(eventSchema.aggregates.keySet());
 
     return eventSchema;
   }
@@ -130,7 +131,7 @@ public class EventSchema implements Serializable
     this.keys = keys;
   }
 
-  public Collection<String> getAggregateKeys() {
+  public Collection<String> getGenericEventValues() {
     return aggregates.keySet();
   }
 
@@ -151,7 +152,7 @@ public class EventSchema implements Serializable
 
   public int getValLen() {
     if (valLen == 0)
-      valLen = getSerializedLength(getAggregateKeys());
+      valLen = getSerializedLength(getGenericEventValues());
     return valLen;
   }
 
@@ -159,7 +160,7 @@ public class EventSchema implements Serializable
     int len = 0;
     for(String field : fields) {
       Class<?> k = this.fields.get(field);
-      len += GenericEventSerializer.fieldSerializers.get(k).dataLength();
+      len += GenericAggregateSerializer.fieldSerializers.get(k).dataLength();
     }
     return len;
   }
@@ -179,45 +180,68 @@ public class EventSchema implements Serializable
     else return input;
   }
 
+
+
   public String toString() {
     return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
   }
 
 
-  ArrayEvent convertMapToArrayEvent(Map<String, Object> tuple)
+  Object getKey(GenericAggregate ga, String name) {
+     return ga.keys[genericEventKeys.indexOf(name)];
+  }
+
+  Object getAggregate(GenericAggregate ga, String name) {
+    return ga.aggregates[genericEventValues.indexOf(name)];
+  }
+
+
+  GenericEvent convertMapToGenericEvent(Map<String, Object> tuple)
   {
-    ArrayEvent ae = new ArrayEvent();
-    Object[] keys = new Object[keysWithoutTimestamp.size()];
+    GenericEvent event = new GenericEvent();
+    Object[] keys = new Object[genericEventKeys.size()];
     int idx = 0;
-    for(String key : keysWithoutTimestamp)
+    for(String key : genericEventKeys)
     {
       if (tuple.containsKey(key))
         keys[idx++] = tuple.get(key);
       else
         keys[idx++] = null;
     }
-    ae.keys = keys;
-    Object[] values = new Object[aggregateKeys.size()];
+    event.keys = keys;
+    Object[] values = new Object[genericEventValues.size()];
     idx = 0;
-    for(String metric : aggregateKeys)
+    for(String metric : genericEventValues)
     {
       if (tuple.containsKey(metric))
         values[idx++] = tuple.get(metric);
       else
         values[idx++] = null;
     }
-    ae.values = values;
-    ae.timestamp = ((Number)tuple.get(getTimestamp())).longValue();
-    return ae;
+    event.values = values;
+    event.timestamp = ((Number)tuple.get(getTimestamp())).longValue();
+    return event;
   }
 
-  public int getTimestampIndex()
-  {
-    return timestampIndex;
+  Map<String, Object> convertAggregateEventToMap(GenericAggregate ga) {
+    Map<String, Object> map = Maps.newHashMap();
+
+    for (int i=0; i < genericEventKeys.size(); i++) {
+      map.put(genericEventKeys.get(i), ga.keys[i]);
+    }
+
+    for (int i=0; i < genericEventValues.size(); i++) {
+      map.put(genericEventValues.get(i), ga.aggregates[i]);
+    }
+
+    map.put(timestamp, ga.getTimestamp());
+
+    return map;
   }
+
 
   public Class getAggregateType(int i)
   {
-    return getType(aggregateKeys.get(i));
+    return getType(genericEventValues.get(i));
   }
 }

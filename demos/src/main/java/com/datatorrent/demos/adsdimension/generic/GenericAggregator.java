@@ -17,32 +17,29 @@ package com.datatorrent.demos.adsdimension.generic;
 
 import com.datatorrent.lib.statistics.DimensionsComputation;
 import com.google.common.collect.Lists;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class ArrayAggregate implements DimensionsComputation.AggregateEvent
+class GenericAggregate implements DimensionsComputation.AggregateEvent
 {
-  ArrayAggregate() {
-  }
 
   public Object[] keys;
   public Object[] aggregates;
-  private int aggregatorIndex = 0;
-  private EventSchema eventSchema;
   long timestamp;
+  private int aggregatorIndex = 0;
 
-  public ArrayAggregate(EventSchema eventSchema) {
-    this.eventSchema = eventSchema;
+  public GenericAggregate() {}
+  public GenericAggregate(GenericEvent ge) {
+    this.keys = ge.keys;
+    this.aggregates = ge.values;
+    this.timestamp = ge.timestamp;
   }
 
-  public ArrayAggregate(EventSchema eventSchema, int aggregatorIndex) {
-    this.eventSchema = eventSchema;
+  public GenericAggregate(int aggregatorIndex) {
     this.aggregatorIndex = aggregatorIndex;
-  }
-
-  public EventSchema getEventSchema() {
-    return eventSchema;
   }
 
   @Override
@@ -62,23 +59,21 @@ class ArrayAggregate implements DimensionsComputation.AggregateEvent
   }
 
   @Override
-  public boolean equals(Object o)
-  {
+  public boolean equals(Object o) {
 
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ArrayAggregate)) {
+    if (!(o instanceof GenericAggregate)) {
       return false;
     }
 
-    ArrayAggregate that = (ArrayAggregate) o;
+    GenericAggregate that = (GenericAggregate) o;
 
-    for(int i = 0; i < keys.length; i++)
-    {
+    for (int i = 0; i < keys.length; i++) {
       Object thisValue = keys[i];
       Object thatValue = that.keys[i];
-      if (thisValue != null ? ! thisValue.equals(thatValue) : thatValue != null) {
+      if (thisValue != null ? !thisValue.equals(thatValue) : thatValue != null) {
         return false;
       }
     }
@@ -99,20 +94,20 @@ class ArrayAggregate implements DimensionsComputation.AggregateEvent
   {
     return "MapAggregate{" +
         "timestamp = " + timestamp +
-        ", keys=" + eventSchema.keys.toString() +
-        ", values=" + aggregates +
+        ", keys=" + Arrays.toString(keys) +
+        ", values=" + Arrays.toString(aggregates) +
         ", aggregatorIndex=" + aggregatorIndex +
         '}';
   }
 }
 
-class ArrayEvent {
+class GenericEvent {
   Object[] keys;
   Object[] values;
   long timestamp;
 }
 
-public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEvent, ArrayAggregate>
+public class GenericAggregator implements DimensionsComputation.Aggregator<GenericEvent, GenericAggregate>
 {
   private static final long serialVersionUID = 7636266873750826291L;
   private EventSchema eventSchema;
@@ -120,9 +115,9 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   private TimeUnit time;
   private final List<String> keys = Lists.newArrayList();
   private final List<Integer> keyIndexes = Lists.newArrayList();
-  public ArrayAggregator() {}
+  public GenericAggregator() {}
 
-  public ArrayAggregator(EventSchema eventSchema)
+  public GenericAggregator(EventSchema eventSchema)
   {
     this.eventSchema = eventSchema;
   }
@@ -141,15 +136,15 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
     }
     this.dimension = dimension;
 
-    for(int i = 0; i < eventSchema.keysWithoutTimestamp.size(); i++)
-      if (keys.contains(eventSchema.keysWithoutTimestamp.get(i)))
+    for(int i = 0; i < eventSchema.genericEventKeys.size(); i++)
+      if (keys.contains(eventSchema.genericEventKeys.get(i)))
         keyIndexes.add(i);
   }
 
   @Override
-  public ArrayAggregate getGroup(ArrayEvent src, int aggregatorIndex)
+  public GenericAggregate getGroup(GenericEvent src, int aggregatorIndex)
   {
-    ArrayAggregate aggr = new ArrayAggregate();
+    GenericAggregate aggr = new GenericAggregate();
     aggr.keys = new Object[src.keys.length];
     for(int i : keyIndexes)
     {
@@ -165,7 +160,7 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
   }
 
   @Override
-  public int computeHashCode(ArrayEvent object)
+  public int computeHashCode(GenericEvent object)
   {
     int hashCode = 31;
     for(int i : keyIndexes)
@@ -178,7 +173,7 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
     return hashCode;
   }
 
-  @Override public boolean equals(ArrayEvent o1, ArrayEvent o2)
+  @Override public boolean equals(GenericEvent o1, GenericEvent o2)
   {
     if (o1 == o2)
       return true;
@@ -212,21 +207,21 @@ public class ArrayAggregator implements DimensionsComputation.Aggregator<ArrayEv
 
 
   @Override
-  public void aggregate(ArrayAggregate dest, ArrayEvent src)
+  public void aggregate(GenericAggregate dest, GenericEvent src)
   {
-    for(int i = 0; i < eventSchema.aggregateKeys.size(); i++) {
+    for(int i = 0; i < eventSchema.genericEventValues.size(); i++) {
       Class type = eventSchema.getAggregateType(i);
-      dest.aggregates[i] = apply(eventSchema.aggregateKeys.get(i), dest.aggregates[i], src.values[i]);
+      dest.aggregates[i] = apply(eventSchema.genericEventValues.get(i), dest.aggregates[i], src.values[i]);
     }
   }
 
 
   @Override
-  public void aggregate(ArrayAggregate dest, ArrayAggregate src)
+  public void aggregate(GenericAggregate dest, GenericAggregate src)
   {
-    for(int i = 0; i < eventSchema.aggregateKeys.size(); i++) {
+    for(int i = 0; i < eventSchema.genericEventValues.size(); i++) {
       Class type = eventSchema.getAggregateType(i);
-      dest.aggregates[i] = apply(eventSchema.aggregateKeys.get(i), dest.aggregates[i], src.aggregates[i]);
+      dest.aggregates[i] = apply(eventSchema.genericEventValues.get(i), dest.aggregates[i], src.aggregates[i]);
     }
   }
 

@@ -42,7 +42,7 @@ public class EventSchemaTest {
 
     Assert.assertNotNull("EventSchema was created", eventSchema);
     Assert.assertEquals("timestamp is timestamp", eventSchema.getTimestamp(), "timestamp");
-    Assert.assertTrue("aggregates are have clicks", eventSchema.getAggregateKeys().contains("clicks") );
+    Assert.assertTrue("aggregates are have clicks", eventSchema.getGenericEventValues().contains("clicks") );
     Assert.assertTrue("aggregate for price is sum", eventSchema.aggregates.get("price").equals("sum") );
     Assert.assertTrue("field publisher is Integer", eventSchema.fields.get("publisherId").equals(Integer.class));
     Assert.assertTrue("field clicks is Long", eventSchema.fields.get("clicks").equals(Long.class));
@@ -59,7 +59,7 @@ public class EventSchemaTest {
 
     Assert.assertNotNull("EventSchema was created", eventSchema);
     Assert.assertEquals("timestamp is timestamp", eventSchema.getTimestamp(), "timestamp");
-    Assert.assertTrue("aggregates are have clicks", eventSchema.getAggregateKeys().contains("clicks") );
+    Assert.assertTrue("aggregates are have clicks", eventSchema.getGenericEventValues().contains("clicks") );
     Assert.assertTrue("aggregate for price is sum", eventSchema.aggregates.get("price").equals("sum") );
     Assert.assertTrue("field publisher is Integer", eventSchema.fields.get("publisherId").equals(Integer.class));
     Assert.assertTrue("field clicks is Long", eventSchema.fields.get("clicks").equals(Long.class));
@@ -76,7 +76,7 @@ public class EventSchemaTest {
 
     Assert.assertNotNull("EventSchema was created", eventSchema);
     Assert.assertEquals("timestamp is timestamp", eventSchema.getTimestamp(), "timestamp");
-    Assert.assertTrue("aggregates are have amount", eventSchema.getAggregateKeys().contains("amount") );
+    Assert.assertTrue("aggregates are have amount", eventSchema.getGenericEventValues().contains("amount") );
     Assert.assertTrue("aggregate for amount is sum", eventSchema.aggregates.get("amount").equals("sum") );
     Assert.assertTrue("field productId is Integer", eventSchema.fields.get("productId").equals(Integer.class));
     Assert.assertTrue("field timestamp is Long", eventSchema.fields.get("timestamp").equals(Long.class));
