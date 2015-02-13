@@ -19,6 +19,7 @@ import com.datatorrent.api.Context;
 import com.datatorrent.api.DefaultInputPort;
 import com.datatorrent.api.DefaultOutputPort;
 import com.datatorrent.common.util.Slice;
+import com.datatorrent.contrib.hdht.HDHTCodec;
 import com.datatorrent.contrib.hdht.AbstractSinglePortHDHTWriter;
 import com.datatorrent.contrib.hdht.tfile.TFileImpl;
 import com.google.common.annotations.VisibleForTesting;

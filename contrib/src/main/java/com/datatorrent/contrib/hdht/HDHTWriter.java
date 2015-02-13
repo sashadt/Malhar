@@ -43,6 +43,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+
+
 /**
  * Writes data to buckets. Can be sub-classed as operator or used in composite pattern.
  * <p>
@@ -150,13 +153,14 @@ public class HDHTWriter extends HDHTReader implements CheckpointListener, Operat
    * @param data
    * @throws IOException
    */
-  private void writeFile(Bucket bucket, BucketMeta bucketMeta, TreeMap<Slice, byte[]> data) throws IOException
+  private Set<String> writeFile(Bucket bucket, BucketMeta bucketMeta, TreeMap<Slice, byte[]> data) throws IOException
   {
     BucketIOStats ioStats = getOrCretaStats(bucket.bucketKey);
     long startTime = System.currentTimeMillis();
 
     HDSFileWriter fw = null;
     BucketFileMeta fileMeta = null;
+    HashSet<String> filesAdded = Sets.newHashSet();
     int keysWritten = 0;
     for (Map.Entry<Slice, byte[]> dataEntry : data.entrySet()) {
       if (fw == null) {
@@ -180,6 +184,7 @@ public class HDHTWriter extends HDHTReader implements CheckpointListener, Operat
         fw.close();
         ioStats.dataBytesWritten += fw.getBytesWritten();
         this.store.rename(bucket.bucketKey, fileMeta.name + ".tmp", fileMeta.name);
+        filesAdded.add(fileMeta.name);
         LOG.debug("created data file {} {} with {} entries", bucket.bucketKey, fileMeta.name, keysWritten);
         fw = null;
         keysWritten = 0;
@@ -192,10 +197,11 @@ public class HDHTWriter extends HDHTReader implements CheckpointListener, Operat
       fw.close();
       ioStats.dataBytesWritten += fw.getBytesWritten();
       this.store.rename(bucket.bucketKey, fileMeta.name + ".tmp", fileMeta.name);
+      filesAdded.add(fileMeta.name);
       LOG.debug("created data file {} {} with {} entries", bucket.bucketKey, fileMeta.name, keysWritten);
     }
-
     ioStats.dataWriteTime += System.currentTimeMillis() - startTime;
+    return filesAdded;
   }
 
   private Bucket getBucket(long bucketKey) throws IOException
@@ -342,6 +348,7 @@ public class HDHTWriter extends HDHTReader implements CheckpointListener, Operat
       fileUpdates.put(entry.getKey(), entry.getValue());
     }
 
+    HashSet<String> filesAdded = Sets.newHashSet();
     HashSet<String> filesToDelete = Sets.newHashSet();
 
     // write modified files
@@ -367,10 +374,14 @@ public class HDHTWriter extends HDHTReader implements CheckpointListener, Operat
       // apply updates
       fileData.putAll(fileEntry.getValue());
       // new file
-      writeFile(bucket, bucketMetaCopy, fileData);
+      filesAdded.addAll(writeFile(bucket, bucketMetaCopy, fileData));
     }
 
     LOG.debug("Files written {} files read {}", ioStats.filesWroteInCurrentWriteCycle, ioStats.filesReadInCurrentWriteCycle);
+
+    // Export
+    store.exportFiles(bucket.bucketKey, filesAdded, filesToDelete);
+
     // flush meta data for new files
     try {
       LOG.debug("Writing {} with {} file entries", FNAME_META, bucketMetaCopy.files.size());

@@ -48,12 +48,6 @@ import com.google.common.collect.Lists;
  */
 public abstract class AbstractSinglePortHDHTWriter<EVENT> extends HDHTWriter implements Partitioner<AbstractSinglePortHDHTWriter<EVENT>>
 {
-  public interface HDHTCodec<EVENT> extends StreamCodec<EVENT>
-  {
-    byte[] getKeyBytes(EVENT event);
-    byte[] getValueBytes(EVENT event);
-    EVENT fromKeyValue(Slice key, byte[] value);
-  }
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractSinglePortHDHTWriter.class);
 

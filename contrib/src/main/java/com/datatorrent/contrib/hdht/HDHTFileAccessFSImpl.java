@@ -16,9 +16,13 @@
 package com.datatorrent.contrib.hdht;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+import com.beust.jcommander.internal.Lists;
+import com.beust.jcommander.internal.Sets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -44,11 +48,29 @@ abstract public class HDHTFileAccessFSImpl implements HDHTFileAccess
   {
   }
 
+
+  private Set<HDSFileExporter> fileExporters = Sets.newHashSet();
+
+  @Override
+  public void registerExporter(HDSFileExporter exporter){
+    fileExporters.add(exporter);
+  }
+
+  public void clearExporters() {
+    fileExporters.clear();
+  }
+
+  @Override
+  public void exportFiles(long bucketKey, Set<String> filesAdded, Set<String> filesToDelete) throws IOException {
+    for(HDSFileExporter exporter: fileExporters) {
+      exporter.exportFiles(this, bucketKey, filesAdded, filesToDelete);
+    }
+  }
+
   public String getBasePath()
   {
     return basePath;
   }
-
   public void setBasePath(String path)
   {
     this.basePath = path;
